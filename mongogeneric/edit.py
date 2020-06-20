@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from django.views.generic.edit import FormMixin, ProcessFormView, DeletionMixin
 
 from mongodbforms.documents import documentform_factory
-from mongogeneric.detail import (SingleDocumentMixin, DetailView, 
+from mongogeneric.detail import (SingleDocumentMixin, DetailView,
                                  SingleDocumentTemplateResponseMixin, BaseDetailView)
 
 class DocumentFormMixin(FormMixin, SingleDocumentMixin):
@@ -58,14 +58,15 @@ class DocumentFormMixin(FormMixin, SingleDocumentMixin):
         return super(DocumentFormMixin, self).form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = kwargs
+        # context = kwargs
+        context = super().get_context_data(**kwargs)
         if self.object:
             context['object'] = self.object
             context_object_name = self.get_context_object_name(self.object)
             if context_object_name:
                 context[context_object_name] = self.object
         return context
-    
+
 
 class EmbeddedFormMixin(FormMixin):
     """
@@ -90,7 +91,7 @@ class EmbeddedFormMixin(FormMixin):
         """
         object = getattr(self, 'object', self.get_object())
         return form_class(object, **self.get_form_kwargs())
-    
+
     def get_embedded_object(self):
         """
         Returns an instance of the embedded object. By default this is a freshly created
@@ -132,20 +133,20 @@ class EmbeddedFormMixin(FormMixin):
 
     def get_context_data(self, **kwargs):
         context = super(EmbeddedFormMixin, self).get_context_data(**kwargs)
-        
+
         object = getattr(self, 'object', self.get_object())
         if 'form' in kwargs:
             form = kwargs['form']
         else:
             form = self.get_form(self.get_form_class())
         context[self.embedded_context_name] = form
-        
+
         return context
 
 
 class ProcessEmbeddedFormMixin(object):
     """
-    A mixin that processes an embedded form on POST. 
+    A mixin that processes an embedded form on POST.
     Does not implement any GET handling.
     """
     def post(self, request, *args, **kwargs):
@@ -158,11 +159,11 @@ class ProcessEmbeddedFormMixin(object):
         super(ProcessEmbeddedFormMixin, self).post(request, *args, **kwargs)
 
 
-class BaseEmbeddedFormMixin(EmbeddedFormMixin, ProcessEmbeddedFormMixin):  
+class BaseEmbeddedFormMixin(EmbeddedFormMixin, ProcessEmbeddedFormMixin):
     """
-    A Mixin that handles an embedded form on POST and 
+    A Mixin that handles an embedded form on POST and
     adds the form into the template context.
-    """      
+    """
 
 
 class BaseCreateView(DocumentFormMixin, ProcessFormView):
@@ -231,7 +232,7 @@ class EmbeddedDetailView(BaseEmbeddedFormMixin, DetailView):
     """
     Renders the detail view of a document and and adds a
     form for an embedded object into the template.
-    
+
     See BaseEmbeddedFormMixin for details on the form.
     """
     def get_context_data(self, **kwargs):
